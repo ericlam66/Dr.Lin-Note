@@ -1,5 +1,5 @@
 # 乖乖宝宝今日计划（2024.10.29）
-![Image of Babyheader](https://github.com/ericlam66/Dr.Lin-Note/blob/Picture/header.png)
+![Image of Babyheader](https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fsafe-img.xhscdn.com%2Fbw1%2Fd439c383-f313-40d5-975d-ed564c6e8235%3FimageView2%2F2%2Fw%2F1080%2Fformat%2Fjpg&refer=http%3A%2F%2Fsafe-img.xhscdn.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1732777354&t=b9666e9552911bf6a4ff19aa0afcb75d)
 ## 宝宝食谱
 - [x] 速食早餐
 - [x] 炒米粉
