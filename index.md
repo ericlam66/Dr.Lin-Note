@@ -1,5 +1,5 @@
 # 乖乖宝宝今日计划（2024.10.29）
-![Image of Babyheader](https://raw.githubusercontent.com/ericlam66/Dr.Lin-Note/Picture/duffy.png)
+![Image of Babyheader](https://github.com/ericlam66/Dr.Lin-Note/blob/main/duffy.png)
 ## 宝宝食谱
 - [x] 速食早餐
 - [x] 炒米粉
@@ -10,5 +10,6 @@
 - [ ] 阿莫西林500mg po q12h
 - [ ] 碘伏消毒伤口 tid
 - [ ] 清咽滴丸 6粒 po tid
-## 宝宝学习计划
+## 宝宝学习和运动计划
 - [ ] 熟悉教案
+- [ ] 跑步
