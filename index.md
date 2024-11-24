@@ -1,4 +1,4 @@
-# 乖乖宝宝今日计划（2024.11.22）
+# 乖乖宝宝今日计划（2024.11.24）
 ![Image of Babyheader](https://raw.githubusercontent.com/ericlam66/Dr.Lin-Note/refs/heads/main/duffy.png)
 ## 宝宝食谱
 - [x] 速食早餐
