@@ -11,6 +11,17 @@
 
 _Organize ideas and collaborate using Markdown, a lightweight language for text formatting._
 
+## 冠脉造影移床训练应用
+
+仓库新增了一个可直接在浏览器打开的训练页面：`index.html`。该应用用于帮助心内科医生入门冠脉造影中的移床方向感训练，核心规则如下：
+
+- 摇杆向左：床往头端移动
+- 摇杆向右：床往尾端移动
+- 摇杆向前：床远离术者
+- 摇杆向后：床靠近术者
+
+可点击页面按钮或使用键盘方向键进行练习，按 `R` 键可回中。
+
 </header>
 
 <!--

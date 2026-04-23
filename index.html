@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>冠脉造影移床训练应用</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #070d1a;
+        --panel: #111c33;
+        --panel-border: #2c3f69;
+        --accent: #2ca4ff;
+        --accent-soft: #1c7dd4;
+        --ok: #37cc8f;
+        --text: #eff6ff;
+        --muted: #94a9cc;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+        color: var(--text);
+        background: radial-gradient(circle at 30% 20%, #132443, var(--bg) 50%);
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 20px;
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 18px;
+      }
+      .card {
+        background: linear-gradient(180deg, rgba(20, 33, 60, 0.95), rgba(11, 19, 37, 0.95));
+        border: 1px solid var(--panel-border);
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 14px 24px rgba(0, 0, 0, 0.3);
+      }
+      h1 {
+        margin-top: 0;
+        font-size: 1.4rem;
+      }
+      #screen {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid #355185;
+        background: #030811;
+        display: block;
+      }
+      .status-grid {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .status-item {
+        background: #0d172b;
+        border: 1px solid #25375c;
+        border-radius: 10px;
+        padding: 8px;
+      }
+      .status-item small {
+        display: block;
+        color: var(--muted);
+      }
+      .status-item strong {
+        color: var(--ok);
+      }
+      .joystick {
+        margin-top: 8px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .btn {
+        border: 1px solid #355185;
+        border-radius: 12px;
+        background: linear-gradient(180deg, #1a3f70, #122946);
+        color: var(--text);
+        font-size: 1rem;
+        font-weight: 700;
+        height: 74px;
+        cursor: pointer;
+      }
+      .btn:active,
+      .btn.active {
+        background: linear-gradient(180deg, var(--accent), var(--accent-soft));
+      }
+      .empty {
+        visibility: hidden;
+      }
+      .tips {
+        color: var(--muted);
+        line-height: 1.5;
+        font-size: 0.95rem;
+      }
+      code {
+        background: #0f1d35;
+        border: 1px solid #274270;
+        border-radius: 6px;
+        padding: 1px 6px;
+      }
+      @media (max-width: 920px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="card">
+        <h1>冠脉造影显示屏模拟</h1>
+        <canvas id="screen" width="760" height="430" aria-label="冠脉造影显示屏"></canvas>
+        <div class="status-grid">
+          <div class="status-item">
+            <small>X 轴（术者↔远离）</small>
+            <strong id="xStatus">0</strong>
+          </div>
+          <div class="status-item">
+            <small>Y 轴（头端↔尾端）</small>
+            <strong id="yStatus">0</strong>
+          </div>
+        </div>
+      </section>
+      <section class="card">
+        <h1>移床摇杆训练</h1>
+        <p class="tips">
+          规则：<br />
+          <strong>向左</strong> = 床向头端移动，<strong>向右</strong> = 床向尾端移动；<br />
+          <strong>向前</strong> = 远离术者，<strong>向后</strong> = 靠近术者。<br />
+          可点击按键或使用键盘 <code>↑ ↓ ← →</code>。
+        </p>
+        <div class="joystick">
+          <button class="empty btn">-</button>
+          <button class="btn" data-action="forward">向前 ↑</button>
+          <button class="empty btn">-</button>
+          <button class="btn" data-action="left">向左 ←</button>
+          <button class="btn" data-action="reset">回中</button>
+          <button class="btn" data-action="right">向右 →</button>
+          <button class="empty btn">-</button>
+          <button class="btn" data-action="backward">向后 ↓</button>
+          <button class="empty btn">-</button>
+        </div>
+      </section>
+    </main>
+    <script>
+      const canvas = document.getElementById("screen");
+      const ctx = canvas.getContext("2d");
+      const xStatus = document.getElementById("xStatus");
+      const yStatus = document.getElementById("yStatus");
+
+      const state = { x: 0, y: 0 };
+      const step = 6;
+      const limit = 90;
+
+      function clamp(v) {
+        return Math.max(-limit, Math.min(limit, v));
+      }
+
+      function formatLabel(v, positive, negative) {
+        if (v === 0) return "0（中心位）";
+        return `${Math.abs(v)}（${v > 0 ? positive : negative}）`;
+      }
+
+      function drawTextLabel() {
+        ctx.fillStyle = "#7ea7ff";
+        ctx.font = "16px sans-serif";
+        ctx.fillText("屏幕中心十字：理想冠脉目标区域", 18, 28);
+      }
+
+      function drawCoronary() {
+        ctx.save();
+        ctx.translate(canvas.width / 2 - state.x, canvas.height / 2 + state.y);
+
+        const glow = ctx.createRadialGradient(0, 0, 8, 0, 0, 180);
+        glow.addColorStop(0, "rgba(255,255,255,0.95)");
+        glow.addColorStop(0.2, "rgba(120,204,255,0.75)");
+        glow.addColorStop(1, "rgba(26,49,88,0)");
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(0, 0, 190, 0, Math.PI * 2);
+        ctx.fill();
+
+        const branches = [
+          [0, 0, -35, -60, -78, -130, -92, -175],
+          [0, 0, 28, -48, 64, -96, 105, -132],
+          [0, 0, -20, 45, -53, 92, -72, 144],
+          [0, 0, 40, 35, 88, 84, 126, 140],
+          [15, -30, 62, -26, 92, -42, 132, -68]
+        ];
+
+        ctx.strokeStyle = "#d8f5ff";
+        ctx.lineWidth = 5;
+        ctx.lineCap = "round";
+        for (const b of branches) {
+          ctx.beginPath();
+          ctx.moveTo(b[0], b[1]);
+          ctx.bezierCurveTo(b[2], b[3], b[4], b[5], b[6], b[7]);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawFrame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        bg.addColorStop(0, "#030811");
+        bg.addColorStop(1, "#071427");
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.strokeStyle = "rgba(115,149,210,0.35)";
+        ctx.setLineDash([6, 8]);
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2, 0);
+        ctx.lineTo(canvas.width / 2, canvas.height);
+        ctx.moveTo(0, canvas.height / 2);
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        drawTextLabel();
+        drawCoronary();
+      }
+
+      function updateStatus() {
+        xStatus.textContent = formatLabel(state.x, "远离术者", "靠近术者");
+        yStatus.textContent = formatLabel(state.y, "头端", "尾端");
+      }
+
+      function move(action) {
+        switch (action) {
+          case "left":
+            state.y = clamp(state.y + step);
+            break;
+          case "right":
+            state.y = clamp(state.y - step);
+            break;
+          case "forward":
+            state.x = clamp(state.x + step);
+            break;
+          case "backward":
+            state.x = clamp(state.x - step);
+            break;
+          case "reset":
+            state.x = 0;
+            state.y = 0;
+            break;
+          default:
+            break;
+        }
+        updateStatus();
+        drawFrame();
+      }
+
+      document.querySelectorAll(".btn[data-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          button.classList.add("active");
+          setTimeout(() => button.classList.remove("active"), 120);
+          move(button.dataset.action);
+        });
+      });
+
+      const keyMap = {
+        ArrowLeft: "left",
+        ArrowRight: "right",
+        ArrowUp: "forward",
+        ArrowDown: "backward"
+      };
+      window.addEventListener("keydown", (e) => {
+        if (keyMap[e.key]) {
+          e.preventDefault();
+          move(keyMap[e.key]);
+        }
+        if (e.key.toLowerCase() === "r") {
+          move("reset");
+        }
+      });
+
+      updateStatus();
+      drawFrame();
+    </script>
+  </body>
+</html>
